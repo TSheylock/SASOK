@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coherence Finance (CoFi) — Confidential Payroll</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      padding: 24px 40px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; }
+    header span { font-size: 0.875rem; color: #94a3b8; }
+    .badge {
+      background: #1d4ed8;
+      color: #bfdbfe;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: #1e293b;
+      padding: 4px;
+      border-radius: 10px;
+      width: fit-content;
+    }
+    .tab {
+      padding: 8px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #94a3b8;
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+    }
+    .tab.active { background: #3b82f6; color: #fff; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; color: #93c5fd; }
+    label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px; margin-top: 12px; }
+    input {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #e2e8f0;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input:focus { border-color: #3b82f6; }
+    button.btn {
+      margin-top: 16px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button.btn:hover { background: #1d4ed8; }
+    button.btn.danger { background: #dc2626; }
+    button.btn.danger:hover { background: #b91c1c; }
+    button.btn.success { background: #059669; }
+    button.btn.success:hover { background: #047857; }
+    .info-box {
+      background: #0f2d1a;
+      border: 1px solid #166534;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.8rem;
+      color: #86efac;
+      margin-top: 12px;
+    }
+    .warn-box {
+      background: #1c1a09;
+      border: 1px solid #713f12;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.8rem;
+      color: #fde68a;
+      margin-top: 12px;
+    }
+    .salary-display {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #34d399;
+      margin-top: 8px;
+    }
+    footer {
+      text-align: center;
+      color: #475569;
+      font-size: 0.75rem;
+      padding: 32px;
+      border-top: 1px solid #1e293b;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Coherence Finance (CoFi)</h1>
+    <span>Confidential On-Chain Payroll</span>
+  </div>
+  <span class="badge">FHE POWERED</span>
+</header>
+
+<div class="container">
+
+  <!-- Wallet Connect -->
+  <div class="card">
+    <h2>Wallet Connection</h2>
+    <p style="color:#94a3b8;font-size:0.875rem">Connect your wallet to interact with the payroll contract on Sepolia.</p>
+    <button class="btn" onclick="connectWallet()">Connect Wallet</button>
+    <div id="walletStatus" class="info-box" style="display:none"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('employer')">Employer Dashboard</button>
+    <button class="tab" onclick="switchTab('employee')">Employee Portal</button>
+  </div>
+
+  <!-- EMPLOYER PANEL -->
+  <div id="employer" class="panel active">
+
+    <div class="card">
+      <h2>Register Employee</h2>
+      <div class="warn-box">Salaries are encrypted client-side via fhevm-js before being sent on-chain. Only you and the employee can decrypt.</div>
+      <label>Employee Wallet Address</label>
+      <input id="empAddress" type="text" placeholder="0x..." />
+      <label>Monthly Salary (USDC)</label>
+      <input id="empSalary" type="number" placeholder="e.g. 5000" />
+      <label>Bonus Factor (%)</label>
+      <input id="empBonus" type="number" placeholder="e.g. 10" min="0" max="100" />
+      <button class="btn success" onclick="registerEmployee()">Encrypt & Register Employee</button>
+    </div>
+
+    <div class="card">
+      <h2>Run Payroll</h2>
+      <p style="color:#94a3b8;font-size:0.875rem;margin-bottom:12px">Execute payroll for all active employees. Total = Salary + (Salary × Bonus%). All amounts remain encrypted on-chain.</p>
+      <button class="btn" onclick="runPayroll()">Execute Encrypted Payroll</button>
+      <div id="payrollStatus" class="info-box" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <h2>Deactivate Employee</h2>
+      <label>Employee Wallet Address</label>
+      <input id="deactivateAddress" type="text" placeholder="0x..." />
+      <button class="btn danger" onclick="deactivateEmployee()">Deactivate</button>
+    </div>
+
+  </div>
+
+  <!-- EMPLOYEE PANEL -->
+  <div id="employee" class="panel">
+    <div class="card">
+      <h2>My Salary</h2>
+      <p style="color:#94a3b8;font-size:0.875rem;margin-bottom:12px">Your salary is stored encrypted on-chain. Click below to decrypt it via the Zama Gateway using your private key.</p>
+      <button class="btn success" onclick="viewMySalary()">Decrypt My Salary</button>
+      <div id="salaryResult" style="display:none">
+        <div class="info-box">Your decrypted monthly salary:</div>
+        <div class="salary-display" id="salaryValue"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  CoFi — Coherence Finance | Built by Teymur Safiulov / Evorin LLC (SASOK Project) | Powered by Zama FHE Protocol
+</footer>
+
+<script>
+  // Tab switching
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(tab).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // Wallet connect (wagmi/ethers placeholder)
+  async function connectWallet() {
+    if (typeof window.ethereum !== 'undefined') {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const status = document.getElementById('walletStatus');
+        status.style.display = 'block';
+        status.textContent = 'Connected: ' + accounts[0];
+      } catch (e) {
+        alert('Connection rejected');
+      }
+    } else {
+      alert('MetaMask not found. Please install MetaMask.');
+    }
+  }
+
+  // Register employee (fhevm-js encryption placeholder)
+  async function registerEmployee() {
+    const addr = document.getElementById('empAddress').value;
+    const salary = document.getElementById('empSalary').value;
+    const bonus = document.getElementById('empBonus').value;
+    if (!addr || !salary || !bonus) { alert('Fill all fields'); return; }
+    // TODO: encrypt salary & bonus via fhevm-js, call contract.addEmployee()
+    alert('Employee registered (encrypted):\n' + addr + '\nSalary: [ENCRYPTED]\nBonus: [ENCRYPTED]');
+  }
+
+  // Run payroll
+  async function runPayroll() {
+    // TODO: call contract.executePayroll()
+    const status = document.getElementById('payrollStatus');
+    status.style.display = 'block';
+    status.textContent = 'Payroll executed. All transfers are confidential on-chain.';
+  }
+
+  // Deactivate
+  async function deactivateEmployee() {
+    const addr = document.getElementById('deactivateAddress').value;
+    if (!addr) { alert('Enter address'); return; }
+    // TODO: call contract.deactivateEmployee(addr)
+    alert('Employee deactivated: ' + addr);
+  }
+
+  // View salary via Zama Gateway
+  async function viewMySalary() {
+    // TODO: call contract.getMySalary(), re-encrypt via Zama Gateway
+    document.getElementById('salaryResult').style.display = 'block';
+    document.getElementById('salaryValue').textContent = '5,000 USDC (demo)';
+  }
+</script>
+
+</body>
+</html>
